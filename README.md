@@ -73,3 +73,24 @@ Please also make sure your code will work well in both scenarios:
 Please feel free to contact us if you have any questions. We are also very happy to listen to your comments and feedback about this test task. If there are things you believe we can improve, please let us know. We are always open to any kind of feedback and suggestions. Honesty and a direct, good communication is a very important value in our company.
 
 Thank you very much for taking the time to do this test. We appreciate your effort a lot and hope you will be joining our team very soon.
+
+## Angelo Pulido - Solution test
+
+To import the data from the excel file generated from [Servicio postal Mexico](https://www.correosdemexico.gob.mx/SSLServicios/ConsultaCP/CodigoPostal_Exportar.aspx) 
+you must run the command ``` rails import:zip_codes ``` which executes a rake tasks that reads the excel file and imports each of the sheets of the excel file.
+
+It goes through each record and in case there is an error with the data and it cannot save it in the DB, it saves both the record and the error details in a json file associated to the model to which it belongs. 
+
+Example: 
+
+- Errors in recorsd of model City ``` city_errs.json ``` 
+- Errors in recorsd of model Municipality ``` municipality_errs.json ``` 
+- Errors in recorsd of model PostalCode ``` postal_code_errs.json ``` 
+- Errors in recorsd of model Neighborhood ``` neighborhood_errs.json ``` 
+
+In case a zip code is not in the excel document but in the database, it will be deleted from the database. 
+
+At the end of the import, the console will show a summary of the imported data, if there were errors (and the JSON files with the details). Also the time it took to run the task and if any records were deleted from the database.
+
+- Estimated import time 22 minutes
+- Estimated re-import time 5 minutes
