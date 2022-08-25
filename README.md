@@ -24,14 +24,21 @@ Este proyecto tiene dos versiones, la 1era que es la implementación y la 2do qu
 
 Esto es lo que se sabe sobre los datos contenidos:
 
-Cada asentamiento tiene un código postal
-Un código postal puede estar asignado a múltiples asentamientos (ejemplo, código postal 01030)
-Un asentamiento puede pertenecer a una ciudad (ejemplo, código postal 1317)
-No todos los asentamientos pertenecen a una ciudad (ejemplo, Los Negritos, código postal 20310)
-Cada asentamiento tiene un tipo
-Cada asentamiento pertenece a un municipio
-Un mismo municipio puede contener varias ciudades (ejemplo, Muelegé)
-Un municipio pertenece a un estado
+- Cada asentamiento tiene un código postal
+
+- Un código postal puede estar asignado a múltiples asentamientos (ejemplo, código postal 01030)
+
+- Un asentamiento puede pertenecer a una ciudad (ejemplo, código postal 1317)
+
+- No todos los asentamientos pertenecen a una ciudad (ejemplo, Los Negritos, código postal 20310)
+
+- Cada asentamiento tiene un tipo
+
+- Cada asentamiento pertenece a un municipio
+
+- Un mismo municipio puede contener varias ciudades (ejemplo, Monterrey)
+
+- Un municipio pertenece a un estado
 
 ## Version 1 "Exploramiento"
 
