@@ -5,7 +5,6 @@ namespace :envia_ya do
         @ct = Country.where(code: 'MX').first
         ts = Time.now
         f = open("./lib/assets/postal_codes.txt", "r:ISO-8859-1:UTF-8")
-        p "Form with Excel, duration aprox 15 minutos to save all the information"
         while (line = f.gets)
             unless line.match? /El Catálogo|d_codigo/
                 row = line.split("|")
