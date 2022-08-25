@@ -1,96 +1,184 @@
-## EnvíaYa - Programming skills test
+# Code Challenge: Save data from SEPOMEX
 
-Thank you very much for your interest in joining our development team. We would be very happy to welcome you, if you posses all required skills. In order to get to know your programming skills in more detail, we kindly ask you to complete this test task.
+## Descripción 
 
-## Task description
+Este proyecto tiene dos versiones, la 1era que es la implementación y la 2do que es la mejora.
 
-EnvíaYa is a shipping integration software. As such, postal code and address information is crucial for our business. We manage this information in several tables:
-- Country_data (Countries)
-- States
-- Cities
-- Municipalities
-- Neighborhoods (Colonias in Mexico)
+## Archivos
 
-These tables are related to each other, in a top to bottom order. 
+- ./lib/assets/postal_codes.xlsx ( versión completa )
+- ./lib/assets/minimalist_cps.xlsx ( versión minimalista con 2 estados )
+- ./lib/assets/postal_codes.txt
 
-The mexican postal code services provide this information on a monthly basis in form of a single Excel file, which can be downloaded here: https://www.correosdemexico.gob.mx/SSLServicios/ConsultaCP/CodigoPostal_Exportar.aspx
+## Uso de Gemas 
 
-The task is to write a method which imports this file into our database, into the normalized tables and relates the entries between each other. (For example: an address has a city_id which points to the correct city in the cities table)
+- Roo
+- Redis
+- Pg
 
-Important: We are interesting in the logic and backend functionality. It is not necessary to write any frontend code or forms.
+## Instalación
 
-## Additional information
+- bundle install
 
-The Sepomex postal code file has the following information:
-- d_codigo: Postal code
-- d_asenta: Neighborhood (Colonia)
-- D_mnpio: Municipality
-- d_estado: State
-- d_ciudad: City
+## Información clave
 
-You can ignore the other columns of the file.
+Esto es lo que se sabe sobre los datos contenidos:
 
-* Please also note that some Mexican postal codes do have a leading zero, like 06100.
-* The Sepomex download file contains many sheets. Please make sure to consider all sheets of the file in your import method.
-* Even though this task is limited to importing Mexican postal codes, as we use the same postal codes table for all international postal codes, the postal_code column is a string, as some countries do not have numeric postal codes. (For example Canada)
-* The same city name and the same neighborhood name can exists more than once in Mexico. Example: Neighborhood "Centro" can exist in different cities. In this case, we will have several entries neighborhood "Centro" in the table. Each one of course related to the correct city.
-* The uniqueness of a neighborhood is defined by the neighborhood + the postal code and the country.
-* The uniqueness of a city is defined by the city + the postal code and the country .
-* The uniqueness of a postal code is defined by the postal code and the country.
-* The uniqueness of a state is defined by the state and the country.
-* The uniqueness of a municipality is defined by the municipality + the city and the country.
-* The postal code and address information of a country rarely changes. After the initial load of the information, future updates will only change 1-3% of the information in the database. (Whereas the other 90-95% will already exist in the tables)
-* Some countries literally manage hundreds of thousands, some even millions of adresses. The Mexican import file is not that big, but please consider that performance is essential. Your process should (theoretically) not only be working for the size of the Mexican import file, but also for files much bigger.
+Cada asentamiento tiene un código postal
+Un código postal puede estar asignado a múltiples asentamientos (ejemplo, código postal 01030)
+Un asentamiento puede pertenecer a una ciudad (ejemplo, código postal 1317)
+No todos los asentamientos pertenecen a una ciudad (ejemplo, Los Negritos, código postal 20310)
+Cada asentamiento tiene un tipo
+Cada asentamiento pertenece a un municipio
+Un mismo municipio puede contener varias ciudades (ejemplo, Muelegé)
+Un municipio pertenece a un estado
 
-## Technical information
+## Version 1 "Exploramiento"
 
-The import method should fill the following tables:
+En esta versión use el archivo EXCEL de SEPOMEX y cree un task llamado así:
 
-* neigborhoods --------> neighborhood
-* postal_codes------> postal_code
-* municipalities----> municipality
-* cities------------> city
-* states------------> state
+```bash
+rake envia_ya:generate_postal_codes_v1
+```
 
-You will have to create the according models, using scheme of the database. To restore/create the structure, you can run the following command:
+Gracias a la herramienta "Roo" pude recorrer cada sheet ( hoja ) del excel que me devolvía el nombre de cada **Estado** ( Ej: Aguascalientes ) y posteriormente por cada sheet ( hoja ) recorrer sus filas para obtener la información necesaria que es **Codigo Postal**, **Colonia**, **Municipio**, **Ciudad** y guardarla en la base de datos usando PostgreSQL.
 
-``` rails db:schema:load ```
+### Fase exploración
 
-## Final words and what we expect
+Gracias al seeds.rb que venía en el proyecto me di cuenta de los pasos de ejecución que son estos:
 
-We will evaluate your code based on the following criteria:
-* Code design and structure
-* Code readability
-* Query efficiency
-* The efficiency and execution time of the method.
+- Se crea Country con el code "MX" y nos devuelve el "id"
+- Se crea State seteandole el **nombre y el country_id**
+- Se crea City seteandole el **nombre, country_id y state_id**
+- Se crea Municipality seteandole el **nombre, country_id, state_id y city_id**
+- Se crea un PostalCode seteandole el **code, state_id, country_id y municipality_id**
+- Se crea un Neighborhood seteandole el **name, country_id, state_id, city_id, postal_code_id y municipality_id**
 
-Please feel free to add any column, indexes, keys, constraints and checks you like to the database tables. The initial DB scheme we provide is only a basic structure to make your life easier. We do not want you to spend time on the basic things, but want you to do your programming magic on the advanced methods and logics. :)
+### Fase desarrollo
 
-Please also make sure your code will work well in both scenarios: 
-1. The initial load of the information when the tables are empty.
-2. The consecutive updates when a big part of the information will already exist in the database. (You need to think of the most efficient process to detect which data is unchanged, which has been updated, which is new and which does not exist in the import file anymore and hence needs to be deleted from the database) If done well, consecutive loads should be faster than the initial load.
+Con esa lista de pasos, se procede a desarrollarlo en el código que es :
 
-Please feel free to contact us if you have any questions. We are also very happy to listen to your comments and feedback about this test task. If there are things you believe we can improve, please let us know. We are always open to any kind of feedback and suggestions. Honesty and a direct, good communication is a very important value in our company.
+- Preguntar si existe el Estado ( where ):
+  -  En caso de que sí, almaceno el "ID"
+  -  En caso de que no, creo el estado ( :name, :country_id ) y almaceno en variable su "id"
 
-Thank you very much for taking the time to do this test. We appreciate your effort a lot and hope you will be joining our team very soon.
+- Preguntar si existe la Ciudad ( where ):
+  -  En caso de que sí, almaceno el "ID"
+  -  En caso de que no, creo la ciudad ( :name, :state_id, :country_id )  y almaceno en variable su "id"
 
-## Angelo Pulido - Solution test
+- Preguntar si existe el Municipio ( where ):
+  -  En caso de que sí, almaceno el "ID"
+  -  En caso de que no, creo el municipio ( :name, :state_id, ;city_id, :country_id ) y almaceno en variable su "id"
 
-To import the data from the excel file generated from [Servicio postal Mexico](https://www.correosdemexico.gob.mx/SSLServicios/ConsultaCP/CodigoPostal_Exportar.aspx) 
-you must run the command ``` rails import:zip_codes ``` which executes a rake tasks that reads the excel file and imports each of the sheets of the excel file.
+- Preguntar si existe el Codigo Postal ( where ):
+  -  En caso de que sí, almaceno el "ID" y adicional :
+      - Pregunto si en el state_id ó municipality_id hubo alguna modificación y en caso de que sí:
+        - Actualizo el Codigo Postal ( update ) 
+  -  En caso de que no, creo el codigo postal ( :code, :municipality_id, :state_id, :country_id ) y almaceno en variable su "id"
 
-It goes through each record and in case there is an error with the data and it cannot save it in the DB, it saves both the record and the error details in a json file associated to the model to which it belongs. 
+- Preguntar si existe la Colonia ( where ):
+    -  En caso de que sí, almaceno el "ID" y adicional :
+      - Pregunto si en el state_id ó municipality_id ó city_id hubo alguna modificación y en caso de que sí:
+        - Actualizo la Colonia ( update )  
+  -  En caso de que no, creo el codigo postal ( :code, :municipality_id, :state_id, :country_id ) y almaceno en variable su "id"
 
-Example: 
+### Fase ejecución
 
-- Errors in recorsd of model City ``` city_errs.json ``` 
-- Errors in recorsd of model Municipality ``` municipality_errs.json ``` 
-- Errors in recorsd of model PostalCode ``` postal_code_errs.json ``` 
-- Errors in recorsd of model Neighborhood ``` neighborhood_errs.json ``` 
+Al momento de ejecutar este desarrollo con todos los codigos postales hubo un gran tiempo de espera de aproxidamente:
 
-In case a zip code is not in the excel document but in the database, it will be deleted from the database. 
+***1 hora y 50 minutos***
 
-At the end of the import, the console will show a summary of the imported data, if there were errors (and the JSON files with the details). Also the time it took to run the task and if any records were deleted from the database.
+### Fase analítica
 
-- Estimated import time 22 minutes
-- Estimated re-import time 5 minutes
+Hacer este proceso de hacer consultas where, create y update nos lleva a un total de llamadas aproxidamente 300,000 y esto nos da unas desventajas:
+
+- Cada vez que tu base de datos tiene mas información, los select se vuelven mas lentos.
+- Poder saturar tu base de datos debido a todos las llamadas continuas sin descanso.
+- Costo de llamadas con AWS o algun proveedor de nube, te puede resultar muy caro.
+
+### Fase de re-ingeniería
+
+Aquí se incorpora nuestro heroe "Redis" que va ayudarle a su amigo "PostgreSQL" a toda esa carga y a reducir precios ( hablando de un escenario real ) y es que Redis nos permite guardar llave => valor ( Ej: "Mexico" => "2" ) y hacer mas rapidaz las llamadas hacía el, dandonos estas ventajas:
+
+- Todos los datos de Redis residen en la memoria, lo que permite un acceso a datos de baja latencia y alto rendimiento
+- A diferencia de las bases de datos tradicionales, los almacenes de datos en memoria no requieren un viaje al disco, lo que reduce la latencia del motor a microsegundos
+- El almacén de datos en memoria permite soportar una cantidad mucho mayor de operaciones y ofrecer tiempos de respuesta más rápidos.
+- El resultado es un desempeño increíblemente rápido y operaciones de lectura o escritura promedio que se ejecutan en menos de un milisegundo y una capacidad para procesar millones de operaciones por segundo.
+
+### Fase de re-desarrollo
+
+Se define un glosario de llaves que van a existir en el Redis:
+
+**Estado**
+**Estado>>Ciudad**
+**Estado>>Ciudad>>Municipio**
+**Estado>>Ciudad>>Municipio>>CodigoPostal**
+**Estado>>Ciudad>>Municipio>>CodigoPostal>>Colonia**
+
+Para evitar los espacios en blancos, signos raros, etc de cada uno de los campos se usa:
+
+**String.parameterize** ( Ref: https://www.rubydoc.info/gems/activesupport/5.0.0.1/String:parameterize ) 
+
+Así si llega un campo "Ciudad de Mexico" sera ahora "ciudad_de_mexico" y se guardara así en el Redis
+
+El valor que se le asignara a cada llave va ser el "ID" entonces un estado quedaría así:
+
+"ciudad_de_mexico" => "1"
+
+En caso de no existir la llave, se procede a crear la información en la base de datos.
+
+### Fase de ejecución #2
+
+El resultado que se espero si fue positivo ya que el tiempo disminuyo por 40 minutos dandonos un aprox de:
+
+**1 hora y 10 minutos**
+
+Otra vez estuve pensando en como poder agilizar esta parte para disminuir el tiempo muy considerablemente y para esto vamos a pasarnos a la Version 2 :)
+
+## Version 2 "Re y re y re ingeniería = todos felices "
+
+### Fase re-ingeniería 
+
+Note que cada fila que provenía del Excel me daba un ligero delay de 1 segundo, esto ocasionado por todas las filas que se estaban procesando. Entonces aquí ya la mejora no era por parte del redis o postgresql, sino de una lectura por milisegundos de cada fila.
+
+Entonces SEPOMEX nos ofrece un archivo TXT que pesa menos y que en lectura es muchisisimo mas rapido que usar el Excel con columnas y filas y que aparte nos da la ventaja de que ya vienen enumerados por su codigo postal.
+
+En esta versión use el archivo TXT de SEPOMEX y cree un task llamado así:
+
+```bash
+rake envia_ya:generate_postal_codes_v2
+```
+
+### Fase re-desarrollo
+
+El problema al principio fue que en las colonias su codificación venía en ISO-8859-1 ocasionando que los acentos no vinieran correctamente.
+
+Entonces gracias al objeto File en su 2do parametro se codifica el archivo a UTF-8 y se procede a recorrer cada linea del archivo.
+
+Como ahora es linea x linea, entonces tuve que preguntar que si en las lineas existía "El Catálogo" ó "d_codigo" se omitiera y siguiera su transcurso.
+
+El código que ya existía en la version 1 se traspasa a este, lo único que cambia es la forma de obtener la información y asignarselas a las variables.
+
+### Fase de ejecución
+
+Ahora si, ya teniendo en cuenta que ya reducimos el delay de lectura por columna y row de un excel + Redis, el tiempo fue algo super positivo y nos arrojo un resultado de
+
+**28 minutos** 🙌🏼🏼🏼
+
+<img width="290" alt="Screen Shot 2022-08-25 at 11 02 43" src="https://user-images.githubusercontent.com/16615287/186727726-c6491903-1d65-4dd9-958b-c25bb5936392.png">
+
+
+# Conclusión
+
+- Todas las fases de ejecución fueron usando todos los codigos postales.
+- Por el tiempo de 3 días del code challenge me limito mucho a mejorar mas el rendimiento, pero para las siguientes etapas considero que ya el Ruby podría agregar un escalon de validación donde el guarde la llave y el valor y así en un escenario real, ya no estar haciendo tantos brincos hacía el Redis y el PostgreSQL
+- Sobre las actualizaciones, considero que debe de crearse otro task donde obtenga los codigos postales de la base de datos y se haga una comparación contra el archivo, en caso de faltar codigos postales, se podrían borrar de la base de datos, en caso de que un codigo postal sea nuevo, tendría que agregarse a la base de datos. 
+
+
+
+
+
+
+
+
+
