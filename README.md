@@ -19,6 +19,7 @@ Este proyecto tiene dos versiones, la 1era que es la implementación y la 2do qu
 ## Instalación
 
 - bundle install
+- rails db:reset
 
 ## Información clave
 
