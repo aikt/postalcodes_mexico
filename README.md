@@ -116,11 +116,11 @@ Aquí se incorpora nuestro heroe "Redis" que va ayudarle a su amigo "PostgreSQL"
 
 Se define un glosario de llaves que van a existir en el Redis:
 
-**Estado**
-**Estado>>Ciudad**
-**Estado>>Ciudad>>Municipio**
-**Estado>>Ciudad>>Municipio>>CodigoPostal**
-**Estado>>Ciudad>>Municipio>>CodigoPostal>>Colonia**
+- **Estado**
+- **Estado>>Ciudad**
+- **Estado>>Ciudad>>Municipio**
+- **Estado>>Ciudad>>Municipio>>CodigoPostal**
+- **Estado>>Ciudad>>Municipio>>CodigoPostal>>Colonia**
 
 Para evitar los espacios en blancos, signos raros, etc de cada uno de los campos se usa:
 
